@@ -101,10 +101,32 @@ let AuthService = class AuthService {
                 id: user.id,
                 name: user.name,
                 phoneNumber: user.phoneNumber,
+                mpesaNumber: user.mpesaNumber,
                 role: user.role,
                 defaultRole: user.defaultRole,
             },
         };
+    }
+    async updateProfile(userId, data) {
+        const { name, vehicleType, vehiclePhotoUrl, plateNumber, idCardPhotoUrl, mpesaNumber } = data;
+        const updatedUser = await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                ...(name && { name }),
+                ...(mpesaNumber && { mpesaNumber }),
+            },
+            include: { courierProfile: true }
+        });
+        if (updatedUser.role === 'COURIER' && (vehicleType || plateNumber || mpesaNumber)) {
+            await this.prisma.courierProfile.update({
+                where: { userId },
+                data: {
+                    ...(vehicleType && { vehicleType }),
+                    ...(plateNumber && { plateNumber }),
+                }
+            });
+        }
+        return this.login(updatedUser);
     }
 };
 exports.AuthService = AuthService;

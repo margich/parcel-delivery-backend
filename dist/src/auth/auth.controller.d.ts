@@ -8,6 +8,7 @@ export declare class AuthController {
             id: any;
             name: any;
             phoneNumber: any;
+            mpesaNumber: any;
             role: any;
             defaultRole: any;
         };
@@ -18,6 +19,7 @@ export declare class AuthController {
             id: any;
             name: any;
             phoneNumber: any;
+            mpesaNumber: any;
             role: any;
             defaultRole: any;
         };
@@ -25,4 +27,15 @@ export declare class AuthController {
         message: string;
     }>;
     getProfile(req: any): any;
+    updateProfile(req: any, updateDto: any): Promise<{
+        access_token: string;
+        user: {
+            id: any;
+            name: any;
+            phoneNumber: any;
+            mpesaNumber: any;
+            role: any;
+            defaultRole: any;
+        };
+    }>;
 }

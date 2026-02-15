@@ -58,6 +58,7 @@ model User {
   role          Role      @default(CUSTOMER)
   activeRole    Role      @default(CUSTOMER)
   defaultRole   Role      @default(CUSTOMER)
+  mpesaNumber   String?
   overallRating Float     @default(5.0)
   lastLogin     DateTime?
   createdAt     DateTime  @default(now())
@@ -68,6 +69,7 @@ model User {
   deliveries     ParcelRequest[] @relation("CourierDeliveries")
   reviewsGiven   Review[]        @relation("Reviewer")
   reviewsReceived Review[]       @relation("Reviewee")
+  savedAddresses SavedAddress[]
 }
 
 model CourierProfile {
@@ -79,6 +81,8 @@ model CourierProfile {
   plateNumber        String?
   idCardPhotoUrl     String?
   isOnline           Boolean            @default(false)
+  latitude           Float?
+  longitude          Float?
   walletBalance      Float              @default(0.0)
   verificationStatus VerificationStatus @default(PENDING)
   createdAt          DateTime           @default(now())
@@ -140,4 +144,15 @@ model Review {
   rating          Int
   comment         String?
   createdAt       DateTime      @default(now())
+}
+
+model SavedAddress {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  label       String
+  address     String
+  lat         Float?
+  lng         Float?
+  createdAt   DateTime @default(now())
 }

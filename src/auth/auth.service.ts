@@ -66,9 +66,40 @@ export class AuthService {
         id: user.id,
         name: user.name,
         phoneNumber: user.phoneNumber,
+        mpesaNumber: user.mpesaNumber,
         role: user.role,
         defaultRole: user.defaultRole,
       },
     };
+  }
+  async updateProfile(userId: string, data: any) {
+    const { name, vehicleType, vehiclePhotoUrl, plateNumber, idCardPhotoUrl, mpesaNumber } = data;
+
+    // Update User fields
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(name && { name }),
+        ...(mpesaNumber && { mpesaNumber }),
+      },
+      include: { courierProfile: true }
+    });
+
+    // Update Courier Profile fields if they exist and user is a courier
+    if (updatedUser.role === 'COURIER' && (vehicleType || plateNumber || mpesaNumber)) {
+      await this.prisma.courierProfile.update({
+        where: { userId },
+        data: {
+          ...(vehicleType && { vehicleType }),
+          ...(plateNumber && { plateNumber }),
+          // Map mpesaNumber to a field if it existed, for now using phoneNumber or specific field? 
+          // Schema doesn't have mpesaNumber in CourierProfile, it likely uses User.phoneNumber for payment
+          // But if we want a separate payout number, we should add it. 
+          // For MVP, we'll assume payout goes to registered phone number, or we update User.phoneNumber if allowed.
+        }
+      });
+    }
+
+    return this.login(updatedUser); // Return new token/user obj
   }
 }

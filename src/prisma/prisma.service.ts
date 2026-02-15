@@ -43,4 +43,8 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   get review() {
     return this.prisma.review;
   }
+
+  get savedAddress() {
+    return this.prisma.savedAddress;
+  }
 }

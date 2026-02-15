@@ -41,11 +41,47 @@ export declare class OrdersService {
             role: import("@prisma/client").$Enums.Role;
             activeRole: import("@prisma/client").$Enums.Role;
             defaultRole: import("@prisma/client").$Enums.Role;
+            mpesaNumber: string | null;
             overallRating: number;
             lastLogin: Date | null;
             createdAt: Date;
             updatedAt: Date;
         };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        customerId: string;
+        courierId: string | null;
+        pickupAddress: string;
+        pickupLat: number;
+        pickupLng: number;
+        dropoffAddress: string;
+        dropoffLat: number;
+        dropoffLng: number;
+        vehicleType: import("@prisma/client").$Enums.VehicleType;
+        packageType: string;
+        instructions: string | null;
+        parcelPhotoUrl: string | null;
+        pickupPhotoUrl: string | null;
+        deliveryPhotoUrl: string | null;
+        price: number;
+        status: import("@prisma/client").$Enums.OrderStatus;
+    })[]>;
+    getMyOrders(userId: string): Promise<({
+        customer: {
+            name: string;
+            phoneNumber: string;
+        };
+        courier: {
+            name: string;
+            phoneNumber: string;
+            courierProfile: {
+                vehicleType: import("@prisma/client").$Enums.VehicleType;
+                latitude: number | null;
+                longitude: number | null;
+            } | null;
+        } | null;
     } & {
         id: string;
         createdAt: Date;
@@ -121,7 +157,55 @@ export declare class OrdersService {
             id: string;
             phoneNumber: string;
             overallRating: number;
+            courierProfile: {
+                vehicleType: import("@prisma/client").$Enums.VehicleType;
+                plateNumber: string | null;
+                latitude: number | null;
+                longitude: number | null;
+            } | null;
         } | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        customerId: string;
+        courierId: string | null;
+        pickupAddress: string;
+        pickupLat: number;
+        pickupLng: number;
+        dropoffAddress: string;
+        dropoffLat: number;
+        dropoffLng: number;
+        vehicleType: import("@prisma/client").$Enums.VehicleType;
+        packageType: string;
+        instructions: string | null;
+        parcelPhotoUrl: string | null;
+        pickupPhotoUrl: string | null;
+        deliveryPhotoUrl: string | null;
+        price: number;
+        status: import("@prisma/client").$Enums.OrderStatus;
+    }>;
+    update(orderId: string, userId: string, data: any): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        customerId: string;
+        courierId: string | null;
+        pickupAddress: string;
+        pickupLat: number;
+        pickupLng: number;
+        dropoffAddress: string;
+        dropoffLat: number;
+        dropoffLng: number;
+        vehicleType: import("@prisma/client").$Enums.VehicleType;
+        packageType: string;
+        instructions: string | null;
+        parcelPhotoUrl: string | null;
+        pickupPhotoUrl: string | null;
+        deliveryPhotoUrl: string | null;
+        price: number;
+        status: import("@prisma/client").$Enums.OrderStatus;
+    }>;
+    remove(orderId: string, userId: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
 import { OrderStatus } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OrdersService } from './orders.service';
@@ -11,6 +11,11 @@ export class OrdersController {
   @Get('pricing')
   getPricing() {
     return this.ordersService.getPricing();
+  }
+
+  @Get()
+  async getMyOrders(@Request() req: any) {
+    return this.ordersService.getMyOrders(req.user.id);
   }
 
   @Post()
@@ -41,5 +46,15 @@ export class OrdersController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
+  }
+
+  @Patch(':id')
+  async update(@Request() req: any, @Param('id') id: string, @Body() updateDto: any) {
+    return this.ordersService.update(id, req.user.id, updateDto);
+  }
+
+  @Delete(':id')
+  async remove(@Request() req: any, @Param('id') id: string) {
+    return this.ordersService.remove(id, req.user.id);
   }
 }

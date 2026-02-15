@@ -34,4 +34,10 @@ export class AuthController {
   getProfile(@Request() req: any) {
     return req.user;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('profile') // Using Post or Patch
+  async updateProfile(@Request() req: any, @Body() updateDto: any) {
+    return this.authService.updateProfile(req.user.id, updateDto);
+  }
 }

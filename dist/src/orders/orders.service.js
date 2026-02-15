@@ -35,13 +35,13 @@ let OrdersService = class OrdersService {
             throw new common_1.BadRequestException('Invalid vehicle type');
         return this.prisma.parcelRequest.create({
             data: {
-                customerId,
+                customer: { connect: { id: customerId } },
                 pickupAddress: data.pickupAddress,
-                pickupLat: data.pickupLat,
-                pickupLng: data.pickupLng,
+                pickupLat: parseFloat(data.pickupLat) || -1.2921,
+                pickupLng: parseFloat(data.pickupLng) || 36.8219,
                 dropoffAddress: data.dropoffAddress,
-                dropoffLat: data.dropoffLat,
-                dropoffLng: data.dropoffLng,
+                dropoffLat: parseFloat(data.dropoffLat) || -1.2921,
+                dropoffLng: parseFloat(data.dropoffLng) || 36.8219,
                 vehicleType: data.vehicleType,
                 packageType: data.packageType,
                 instructions: data.instructions,
@@ -63,6 +63,33 @@ let OrdersService = class OrdersService {
                 vehicleType: courier.vehicleType,
             },
             include: { customer: true },
+        });
+    }
+    async getMyOrders(userId) {
+        return this.prisma.parcelRequest.findMany({
+            where: {
+                OR: [
+                    { customerId: userId },
+                    { courierId: userId }
+                ]
+            },
+            include: {
+                customer: { select: { name: true, phoneNumber: true } },
+                courier: {
+                    select: {
+                        name: true,
+                        phoneNumber: true,
+                        courierProfile: {
+                            select: {
+                                vehicleType: true,
+                                latitude: true,
+                                longitude: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
         });
     }
     async acceptOrder(courierId, orderId) {
@@ -104,7 +131,22 @@ let OrdersService = class OrdersService {
             where: { id },
             include: {
                 customer: { select: { id: true, name: true, phoneNumber: true, overallRating: true } },
-                courier: { select: { id: true, name: true, phoneNumber: true, overallRating: true } },
+                courier: {
+                    select: {
+                        id: true,
+                        name: true,
+                        phoneNumber: true,
+                        overallRating: true,
+                        courierProfile: {
+                            select: {
+                                vehicleType: true,
+                                plateNumber: true,
+                                latitude: true,
+                                longitude: true
+                            }
+                        }
+                    }
+                },
             },
         });
         if (!order)
@@ -117,6 +159,50 @@ let OrdersService = class OrdersService {
                 result.courier.phoneNumber = 'Hidden';
         }
         return result;
+    }
+    async update(orderId, userId, data) {
+        const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        if (order.customerId !== userId)
+            throw new common_1.ForbiddenException('Not your order');
+        if (order.status !== client_1.OrderStatus.CREATED) {
+            throw new common_1.BadRequestException('Cannot edit an order once it has been paid. Only CREATED orders can be edited.');
+        }
+        let price = order.price;
+        if (data.vehicleType && data.vehicleType !== order.vehicleType) {
+            price = this.pricing[data.vehicleType];
+            if (!price)
+                throw new common_1.BadRequestException('Invalid vehicle type');
+        }
+        return this.prisma.parcelRequest.update({
+            where: { id: orderId },
+            data: {
+                pickupAddress: data.pickupAddress ?? order.pickupAddress,
+                pickupLat: data.pickupLat ?? order.pickupLat,
+                pickupLng: data.pickupLng ?? order.pickupLng,
+                dropoffAddress: data.dropoffAddress ?? order.dropoffAddress,
+                dropoffLat: data.dropoffLat ?? order.dropoffLat,
+                dropoffLng: data.dropoffLng ?? order.dropoffLng,
+                vehicleType: data.vehicleType ?? order.vehicleType,
+                packageType: data.packageType ?? order.packageType,
+                instructions: data.instructions ?? order.instructions,
+                price,
+            },
+        });
+    }
+    async remove(orderId, userId) {
+        const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+        if (!order)
+            throw new common_1.NotFoundException('Order not found');
+        if (order.customerId !== userId)
+            throw new common_1.ForbiddenException('Not your order');
+        if (order.status !== client_1.OrderStatus.CREATED) {
+            throw new common_1.BadRequestException('Only unpaid orders can be deleted. Please contact support for refunds on paid orders.');
+        }
+        return this.prisma.parcelRequest.delete({
+            where: { id: orderId },
+        });
     }
 };
 exports.OrdersService = OrdersService;

@@ -25,6 +25,9 @@ let OrdersController = class OrdersController {
     getPricing() {
         return this.ordersService.getPricing();
     }
+    async getMyOrders(req) {
+        return this.ordersService.getMyOrders(req.user.id);
+    }
     async create(req, orderDto) {
         return this.ordersService.create(req.user.id, orderDto);
     }
@@ -40,6 +43,12 @@ let OrdersController = class OrdersController {
     async findOne(id) {
         return this.ordersService.findOne(id);
     }
+    async update(req, id, updateDto) {
+        return this.ordersService.update(id, req.user.id, updateDto);
+    }
+    async remove(req, id) {
+        return this.ordersService.remove(id, req.user.id);
+    }
 };
 exports.OrdersController = OrdersController;
 __decorate([
@@ -48,6 +57,13 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getPricing", null);
+__decorate([
+    (0, common_1.Get)(),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "getMyOrders", null);
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Request)()),
@@ -88,6 +104,23 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "update", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "remove", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

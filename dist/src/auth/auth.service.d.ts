@@ -10,6 +10,7 @@ export declare class AuthService {
             id: any;
             name: any;
             phoneNumber: any;
+            mpesaNumber: any;
             role: any;
             defaultRole: any;
         };
@@ -21,6 +22,18 @@ export declare class AuthService {
             id: any;
             name: any;
             phoneNumber: any;
+            mpesaNumber: any;
+            role: any;
+            defaultRole: any;
+        };
+    }>;
+    updateProfile(userId: string, data: any): Promise<{
+        access_token: string;
+        user: {
+            id: any;
+            name: any;
+            phoneNumber: any;
+            mpesaNumber: any;
             role: any;
             defaultRole: any;
         };

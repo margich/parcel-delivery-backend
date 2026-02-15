@@ -44,6 +44,9 @@ let PrismaService = class PrismaService {
     get review() {
         return this.prisma.review;
     }
+    get savedAddress() {
+        return this.prisma.savedAddress;
+    }
 };
 exports.PrismaService = PrismaService;
 exports.PrismaService = PrismaService = __decorate([
