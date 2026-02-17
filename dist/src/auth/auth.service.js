@@ -87,14 +87,18 @@ let AuthService = class AuthService {
     }
     async validateUser(phoneNumber, pass) {
         const user = await this.prisma.user.findUnique({ where: { phoneNumber } });
-        if (user && await bcrypt.compare(pass, user.password)) {
+        if (user && (await bcrypt.compare(pass, user.password))) {
             const { password, ...result } = user;
             return result;
         }
         return null;
     }
     async login(user) {
-        const payload = { sub: user.id, phoneNumber: user.phoneNumber, role: user.role };
+        const payload = {
+            sub: user.id,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+        };
         return {
             access_token: this.jwtService.sign(payload),
             user: {
@@ -108,22 +112,23 @@ let AuthService = class AuthService {
         };
     }
     async updateProfile(userId, data) {
-        const { name, vehicleType, vehiclePhotoUrl, plateNumber, idCardPhotoUrl, mpesaNumber } = data;
+        const { name, vehicleType, vehiclePhotoUrl, plateNumber, idCardPhotoUrl, mpesaNumber, } = data;
         const updatedUser = await this.prisma.user.update({
             where: { id: userId },
             data: {
                 ...(name && { name }),
                 ...(mpesaNumber && { mpesaNumber }),
             },
-            include: { courierProfile: true }
+            include: { courierProfile: true },
         });
-        if (updatedUser.role === 'COURIER' && (vehicleType || plateNumber || mpesaNumber)) {
+        if (updatedUser.role === 'COURIER' &&
+            (vehicleType || plateNumber || mpesaNumber)) {
             await this.prisma.courierProfile.update({
                 where: { userId },
                 data: {
                     ...(vehicleType && { vehicleType }),
                     ...(plateNumber && { plateNumber }),
-                }
+                },
             });
         }
         return this.login(updatedUser);

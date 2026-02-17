@@ -7,10 +7,10 @@ export declare class WalletService {
         currency: string;
     }>;
     getTransactions(userId: string): Promise<{
-        id: string;
+        id: any;
         type: string;
-        amount: number;
-        date: Date;
+        amount: any;
+        date: any;
         reference: string;
         status: string;
     }[]>;

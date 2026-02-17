@@ -1,4 +1,12 @@
-import { Body, ConflictException, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
@@ -11,10 +19,10 @@ export class AuthController {
     try {
       return await this.authService.register(registerDto);
     } catch (error) {
-       if (error instanceof ConflictException) {
-         throw error;
-       }
-       throw error;
+      if (error instanceof ConflictException) {
+        throw error;
+      }
+      throw error;
     }
   }
 
@@ -22,7 +30,10 @@ export class AuthController {
   async login(@Request() req: any) {
     // In a full implementation, we'd use a LocalAuthGuard here.
     // For MVP, we'll validate manually or just use the service.
-    const user = await this.authService.validateUser(req.body.phoneNumber, req.body.password);
+    const user = await this.authService.validateUser(
+      req.body.phoneNumber,
+      req.body.password,
+    );
     if (!user) {
       return { message: 'Invalid credentials' }; // Replace with UnauthorizedException
     }

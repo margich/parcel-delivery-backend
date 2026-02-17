@@ -54,8 +54,11 @@ let OrdersService = class OrdersService {
         const courier = await this.prisma.courierProfile.findUnique({
             where: { userId: courierId },
         });
-        if (!courier || courier.verificationStatus !== 'VERIFIED') {
-            throw new common_1.ForbiddenException('Only verified couriers can see jobs');
+        if (!courier) {
+            throw new common_1.ForbiddenException('Only registered couriers can see jobs');
+        }
+        if (courier.verificationStatus === 'REJECTED') {
+            throw new common_1.ForbiddenException('Your courier profile has been rejected. Please contact support.');
         }
         return this.prisma.parcelRequest.findMany({
             where: {

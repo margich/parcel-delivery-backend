@@ -35,12 +35,22 @@ let PaymentsService = class PaymentsService {
                 phoneNumber,
             },
         });
-        console.log(`Initiating STK Push for ${phoneNumber} - Amount ${amount}`);
+        await this.simulatePaymentConfirmation(orderId, transaction.id);
         return {
-            message: 'STK Push initiated',
+            message: 'Payment successful (simulated)',
             transactionId: transaction.id,
             checkoutRequestId: 'ws_CO_000000000000000000'
         };
+    }
+    async simulatePaymentConfirmation(orderId, transactionId) {
+        await this.prisma.transaction.update({
+            where: { id: transactionId },
+            data: { status: client_1.TransactionStatus.SUCCESS },
+        });
+        await this.prisma.parcelRequest.update({
+            where: { id: orderId },
+            data: { status: client_1.OrderStatus.PAID },
+        });
     }
     async handleMpesaCallback(payload) {
         const { Body } = payload;

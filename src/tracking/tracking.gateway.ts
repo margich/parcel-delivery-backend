@@ -30,6 +30,7 @@ export class TrackingGateway {
     @MessageBody() data: { orderId: string; lat: number; lng: number; bearing?: number },
   ) {
     this.server.to(`order_${data.orderId}`).emit('locationUpdated', {
+      orderId: data.orderId,
       lat: data.lat,
       lng: data.lng,
       bearing: data.bearing,

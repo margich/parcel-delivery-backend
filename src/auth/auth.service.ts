@@ -51,7 +51,7 @@ export class AuthService {
   async validateUser(phoneNumber: string, pass: string): Promise<any> {
     const user = await this.prisma.user.findUnique({ where: { phoneNumber } });
     // Note: I need to add 'password' to my Prisma schema. I'll do that now.
-    if (user && await bcrypt.compare(pass, (user as any).password)) {
+    if (user && (await bcrypt.compare(pass, (user as any).password))) {
       const { password, ...result } = user as any;
       return result;
     }
@@ -59,7 +59,11 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { sub: user.id, phoneNumber: user.phoneNumber, role: user.role };
+    const payload = {
+      sub: user.id,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+    };
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -73,7 +77,14 @@ export class AuthService {
     };
   }
   async updateProfile(userId: string, data: any) {
-    const { name, vehicleType, vehiclePhotoUrl, plateNumber, idCardPhotoUrl, mpesaNumber } = data;
+    const {
+      name,
+      vehicleType,
+      vehiclePhotoUrl,
+      plateNumber,
+      idCardPhotoUrl,
+      mpesaNumber,
+    } = data;
 
     // Update User fields
     const updatedUser = await this.prisma.user.update({
@@ -82,21 +93,24 @@ export class AuthService {
         ...(name && { name }),
         ...(mpesaNumber && { mpesaNumber }),
       },
-      include: { courierProfile: true }
+      include: { courierProfile: true },
     });
 
     // Update Courier Profile fields if they exist and user is a courier
-    if (updatedUser.role === 'COURIER' && (vehicleType || plateNumber || mpesaNumber)) {
+    if (
+      updatedUser.role === 'COURIER' &&
+      (vehicleType || plateNumber || mpesaNumber)
+    ) {
       await this.prisma.courierProfile.update({
         where: { userId },
         data: {
           ...(vehicleType && { vehicleType }),
           ...(plateNumber && { plateNumber }),
-          // Map mpesaNumber to a field if it existed, for now using phoneNumber or specific field? 
+          // Map mpesaNumber to a field if it existed, for now using phoneNumber or specific field?
           // Schema doesn't have mpesaNumber in CourierProfile, it likely uses User.phoneNumber for payment
-          // But if we want a separate payout number, we should add it. 
+          // But if we want a separate payout number, we should add it.
           // For MVP, we'll assume payout goes to registered phone number, or we update User.phoneNumber if allowed.
-        }
+        },
       });
     }
 

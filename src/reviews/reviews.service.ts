@@ -25,7 +25,11 @@ export class ReviewsService {
       select: { rating: true },
     });
 
-    const averageRating = recipientReviews.reduce((acc, curr) => acc + curr.rating, 0) / recipientReviews.length;
+    const averageRating =
+      recipientReviews.reduce(
+        (acc: number, curr: { rating: number }) => acc + curr.rating,
+        0,
+      ) / recipientReviews.length;
 
     await this.prisma.user.update({
       where: { id: toUserId },

@@ -47,8 +47,12 @@ export class OrdersService {
       where: { userId: courierId },
     });
 
-    if (!courier || courier.verificationStatus !== 'VERIFIED') {
-      throw new ForbiddenException('Only verified couriers can see jobs');
+    if (!courier) {
+      throw new ForbiddenException('Only registered couriers can see jobs');
+    }
+
+    if (courier.verificationStatus === 'REJECTED') {
+      throw new ForbiddenException('Your courier profile has been rejected. Please contact support.');
     }
 
     return this.prisma.parcelRequest.findMany({

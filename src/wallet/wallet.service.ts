@@ -10,9 +10,13 @@ export class WalletService {
     const courier = await this.prisma.courierProfile.findUnique({
       where: { userId },
     });
-    
+
     if (!courier) {
-      throw new Error('Courier profile not found');
+      // Return default balance for users without a courier profile
+      return {
+        balance: 0,
+        currency: 'KES',
+      };
     }
 
     return {
@@ -23,10 +27,10 @@ export class WalletService {
 
   async getTransactions(userId: string) {
     // Basic transaction history logic
-    // We can fetch from a Transaction table if we link it to Courier, 
+    // We can fetch from a Transaction table if we link it to Courier,
     // or calculate from completed orders for now.
     // For MVP, let's fetch completed orders as "Earnings"
-    
+
     const earnings = await this.prisma.parcelRequest.findMany({
       where: {
         courierId: userId,
@@ -36,7 +40,7 @@ export class WalletService {
       take: 20,
     });
 
-    return earnings.map(order => ({
+    return earnings.map((order: any) => ({
       id: order.id,
       type: 'EARNING',
       amount: order.price, // Assuming full price for now, minus commission later

@@ -8,6 +8,7 @@ export declare class PaymentsService {
         transactionId: string;
         checkoutRequestId: string;
     }>;
+    simulatePaymentConfirmation(orderId: string, transactionId: string): Promise<void>;
     handleMpesaCallback(payload: any): Promise<void>;
     withdrawToMpesa(courierId: string, amount: number): Promise<{
         message: string;

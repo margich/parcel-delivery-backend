@@ -23,6 +23,7 @@ let TrackingGateway = class TrackingGateway {
     }
     handleLocationUpdate(data) {
         this.server.to(`order_${data.orderId}`).emit('locationUpdated', {
+            orderId: data.orderId,
             lat: data.lat,
             lng: data.lng,
             bearing: data.bearing,

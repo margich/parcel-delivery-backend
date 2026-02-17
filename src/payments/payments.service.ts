@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { TransactionStatus, TransactionType } from '@prisma/client';
+import { OrderStatus, TransactionStatus, TransactionType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -27,16 +27,28 @@ export class PaymentsService {
       },
     });
 
-    // 2. Logic to call Safaricom API (STK Push)
-    // For MVP/Simulation, we'll return a success message
-    // In production, this would use axios to call Daraja
-    console.log(`Initiating STK Push for ${phoneNumber} - Amount ${amount}`);
+    // 2. For MVP/Simulation: auto-confirm the payment and transition order to PAID
+    await this.simulatePaymentConfirmation(orderId, transaction.id);
     
     return {
-      message: 'STK Push initiated',
+      message: 'Payment successful (simulated)',
       transactionId: transaction.id,
       checkoutRequestId: 'ws_CO_000000000000000000' // Simulated ID
     };
+  }
+
+  async simulatePaymentConfirmation(orderId: string, transactionId: string) {
+    // Update transaction to SUCCESS
+    await this.prisma.transaction.update({
+      where: { id: transactionId },
+      data: { status: TransactionStatus.SUCCESS },
+    });
+
+    // Transition the order to PAID
+    await this.prisma.parcelRequest.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.PAID },
+    });
   }
 
   async handleMpesaCallback(payload: any) {

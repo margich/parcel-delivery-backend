@@ -23,7 +23,10 @@ let WalletService = class WalletService {
             where: { userId },
         });
         if (!courier) {
-            throw new Error('Courier profile not found');
+            return {
+                balance: 0,
+                currency: 'KES',
+            };
         }
         return {
             balance: courier.walletBalance,
@@ -39,7 +42,7 @@ let WalletService = class WalletService {
             orderBy: { updatedAt: 'desc' },
             take: 20,
         });
-        return earnings.map(order => ({
+        return earnings.map((order) => ({
             id: order.id,
             type: 'EARNING',
             amount: order.price,
