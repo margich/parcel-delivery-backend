@@ -79,6 +79,13 @@ export class AuthService {
       },
     };
   }
+
+  async getUserById(userId: string) {
+    return await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { courierProfile: true },
+    });
+  }
   async updateProfile(userId: string, data: any) {
     const {
       name,

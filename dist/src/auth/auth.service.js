@@ -114,6 +114,12 @@ let AuthService = class AuthService {
             },
         };
     }
+    async getUserById(userId) {
+        return await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { courierProfile: true },
+        });
+    }
     async updateProfile(userId, data) {
         const { name, vehicleType, vehiclePhotoUrl, plateNumber, idCardFrontPhotoUrl, idCardBackPhotoUrl, payoutMpesaNumber, mpesaNumber, } = data;
         const wantsToBecomeCourier = !!(vehicleType ||

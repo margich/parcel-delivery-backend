@@ -39,8 +39,9 @@ let AuthController = class AuthController {
         }
         return this.authService.login(user);
     }
-    getProfile(req) {
-        return req.user;
+    async getProfile(req) {
+        const user = await this.authService.getUserById(req.user.id);
+        return user;
     }
     async updateProfile(req, updateDto) {
         return this.authService.updateProfile(req.user.id, updateDto);
@@ -67,7 +68,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
+    __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
