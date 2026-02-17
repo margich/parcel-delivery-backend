@@ -16,7 +16,7 @@ exports.ReviewsModule = ReviewsModule;
 exports.ReviewsModule = ReviewsModule = __decorate([
     (0, common_1.Module)({
         providers: [reviews_service_1.ReviewsService],
-        controllers: [reviews_controller_1.ReviewsController]
+        controllers: [reviews_controller_1.ReviewsController],
     })
 ], ReviewsModule);
 //# sourceMappingURL=reviews.module.js.map

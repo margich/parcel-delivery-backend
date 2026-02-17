@@ -71,10 +71,7 @@ let OrdersService = class OrdersService {
     async getMyOrders(userId) {
         return this.prisma.parcelRequest.findMany({
             where: {
-                OR: [
-                    { customerId: userId },
-                    { courierId: userId }
-                ]
+                OR: [{ customerId: userId }, { courierId: userId }],
             },
             include: {
                 customer: { select: { name: true, phoneNumber: true } },
@@ -86,17 +83,19 @@ let OrdersService = class OrdersService {
                             select: {
                                 vehicleType: true,
                                 latitude: true,
-                                longitude: true
-                            }
-                        }
-                    }
-                }
+                                longitude: true,
+                            },
+                        },
+                    },
+                },
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
         });
     }
     async acceptOrder(courierId, orderId) {
-        const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+        const order = await this.prisma.parcelRequest.findUnique({
+            where: { id: orderId },
+        });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         if (order.status !== client_1.OrderStatus.PAID)
@@ -112,7 +111,9 @@ let OrdersService = class OrdersService {
         return updatedOrder;
     }
     async updateStatus(orderId, userId, status, photos) {
-        const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+        const order = await this.prisma.parcelRequest.findUnique({
+            where: { id: orderId },
+        });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         if (order.customerId !== userId && order.courierId !== userId) {
@@ -122,8 +123,12 @@ let OrdersService = class OrdersService {
             where: { id: orderId },
             data: {
                 status,
-                ...(photos?.pickupPhotoUrl && { pickupPhotoUrl: photos.pickupPhotoUrl }),
-                ...(photos?.deliveryPhotoUrl && { deliveryPhotoUrl: photos.deliveryPhotoUrl }),
+                ...(photos?.pickupPhotoUrl && {
+                    pickupPhotoUrl: photos.pickupPhotoUrl,
+                }),
+                ...(photos?.deliveryPhotoUrl && {
+                    deliveryPhotoUrl: photos.deliveryPhotoUrl,
+                }),
             },
         });
         this.trackingGateway.broadcastStatusUpdate(orderId, status);
@@ -133,7 +138,14 @@ let OrdersService = class OrdersService {
         const order = await this.prisma.parcelRequest.findUnique({
             where: { id },
             include: {
-                customer: { select: { id: true, name: true, phoneNumber: true, overallRating: true } },
+                customer: {
+                    select: {
+                        id: true,
+                        name: true,
+                        phoneNumber: true,
+                        overallRating: true,
+                    },
+                },
                 courier: {
                     select: {
                         id: true,
@@ -145,17 +157,18 @@ let OrdersService = class OrdersService {
                                 vehicleType: true,
                                 plateNumber: true,
                                 latitude: true,
-                                longitude: true
-                            }
-                        }
-                    }
+                                longitude: true,
+                            },
+                        },
+                    },
                 },
             },
         });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         const result = { ...order };
-        if (order.status === client_1.OrderStatus.CREATED || order.status === client_1.OrderStatus.PAID) {
+        if (order.status === client_1.OrderStatus.CREATED ||
+            order.status === client_1.OrderStatus.PAID) {
             if (result.customer)
                 result.customer.phoneNumber = 'Hidden';
             if (result.courier)
@@ -164,7 +177,9 @@ let OrdersService = class OrdersService {
         return result;
     }
     async update(orderId, userId, data) {
-        const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+        const order = await this.prisma.parcelRequest.findUnique({
+            where: { id: orderId },
+        });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         if (order.customerId !== userId)
@@ -195,7 +210,9 @@ let OrdersService = class OrdersService {
         });
     }
     async remove(orderId, userId) {
-        const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+        const order = await this.prisma.parcelRequest.findUnique({
+            where: { id: orderId },
+        });
         if (!order)
             throw new common_1.NotFoundException('Order not found');
         if (order.customerId !== userId)

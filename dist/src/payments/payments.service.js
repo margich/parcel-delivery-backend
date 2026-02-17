@@ -39,7 +39,7 @@ let PaymentsService = class PaymentsService {
         return {
             message: 'Payment successful (simulated)',
             transactionId: transaction.id,
-            checkoutRequestId: 'ws_CO_000000000000000000'
+            checkoutRequestId: 'ws_CO_000000000000000000',
         };
     }
     async simulatePaymentConfirmation(orderId, transactionId) {
@@ -76,7 +76,9 @@ let PaymentsService = class PaymentsService {
             where: { userId: courierId },
             data: { walletBalance: { decrement: amount } },
         });
-        const user = await this.prisma.user.findUnique({ where: { id: courierId } });
+        const user = await this.prisma.user.findUnique({
+            where: { id: courierId },
+        });
         if (!user) {
             throw new common_1.BadRequestException('User not found');
         }

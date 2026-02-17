@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { OrderStatus, TransactionStatus, TransactionType } from '@prisma/client';
+import {
+  OrderStatus,
+  TransactionStatus,
+  TransactionType,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -29,11 +33,11 @@ export class PaymentsService {
 
     // 2. For MVP/Simulation: auto-confirm the payment and transition order to PAID
     await this.simulatePaymentConfirmation(orderId, transaction.id);
-    
+
     return {
       message: 'Payment successful (simulated)',
       transactionId: transaction.id,
-      checkoutRequestId: 'ws_CO_000000000000000000' // Simulated ID
+      checkoutRequestId: 'ws_CO_000000000000000000', // Simulated ID
     };
   }
 
@@ -59,7 +63,7 @@ export class PaymentsService {
     const checkoutRequestId = stkCallback.CheckoutRequestID;
 
     // Find the transaction (in real app, we use checkoutRequestId to find it)
-    // For simulation, we'll need a way to link it. 
+    // For simulation, we'll need a way to link it.
     // Usually we store MerchantRequestID and CheckoutRequestID in the Transaction record.
 
     if (resultCode === 0) {
@@ -90,7 +94,9 @@ export class PaymentsService {
     });
 
     // 2. Create payout transaction
-    const user = await this.prisma.user.findUnique({ where: { id: courierId } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: courierId },
+    });
     if (!user) {
       throw new BadRequestException('User not found');
     }

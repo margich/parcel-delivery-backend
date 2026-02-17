@@ -1,9 +1,9 @@
 import {
-    ConnectedSocket,
-    MessageBody,
-    SubscribeMessage,
-    WebSocketGateway,
-    WebSocketServer,
+  ConnectedSocket,
+  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
@@ -27,7 +27,13 @@ export class TrackingGateway {
 
   @SubscribeMessage('updateLocation')
   handleLocationUpdate(
-    @MessageBody() data: { orderId: string; lat: number; lng: number; bearing?: number },
+    @MessageBody()
+    data: {
+      orderId: string;
+      lat: number;
+      lng: number;
+      bearing?: number;
+    },
   ) {
     this.server.to(`order_${data.orderId}`).emit('locationUpdated', {
       orderId: data.orderId,

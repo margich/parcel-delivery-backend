@@ -25,7 +25,7 @@ let UsersService = class UsersService {
         const totalSpentAggregate = await this.prisma.parcelRequest.aggregate({
             where: {
                 customerId: userId,
-                status: { not: client_1.OrderStatus.CANCELLED }
+                status: { not: client_1.OrderStatus.CANCELLED },
             },
             _sum: {
                 price: true,
@@ -34,7 +34,17 @@ let UsersService = class UsersService {
         const activeOrders = await this.prisma.parcelRequest.count({
             where: {
                 customerId: userId,
-                status: { in: [client_1.OrderStatus.CREATED, client_1.OrderStatus.PAID, client_1.OrderStatus.ACCEPTED, client_1.OrderStatus.ARRIVED_PICKUP, client_1.OrderStatus.PICKED_UP, client_1.OrderStatus.IN_TRANSIT, client_1.OrderStatus.ARRIVED_DROPOFF] },
+                status: {
+                    in: [
+                        client_1.OrderStatus.CREATED,
+                        client_1.OrderStatus.PAID,
+                        client_1.OrderStatus.ACCEPTED,
+                        client_1.OrderStatus.ARRIVED_PICKUP,
+                        client_1.OrderStatus.PICKED_UP,
+                        client_1.OrderStatus.IN_TRANSIT,
+                        client_1.OrderStatus.ARRIVED_DROPOFF,
+                    ],
+                },
             },
         });
         return {

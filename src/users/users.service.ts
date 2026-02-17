@@ -12,9 +12,9 @@ export class UsersService {
     });
 
     const totalSpentAggregate = await this.prisma.parcelRequest.aggregate({
-      where: { 
+      where: {
         customerId: userId,
-        status: { not: OrderStatus.CANCELLED }
+        status: { not: OrderStatus.CANCELLED },
       },
       _sum: {
         price: true,
@@ -24,7 +24,17 @@ export class UsersService {
     const activeOrders = await this.prisma.parcelRequest.count({
       where: {
         customerId: userId,
-        status: { in: [OrderStatus.CREATED, OrderStatus.PAID, OrderStatus.ACCEPTED, OrderStatus.ARRIVED_PICKUP, OrderStatus.PICKED_UP, OrderStatus.IN_TRANSIT, OrderStatus.ARRIVED_DROPOFF] },
+        status: {
+          in: [
+            OrderStatus.CREATED,
+            OrderStatus.PAID,
+            OrderStatus.ACCEPTED,
+            OrderStatus.ARRIVED_PICKUP,
+            OrderStatus.PICKED_UP,
+            OrderStatus.IN_TRANSIT,
+            OrderStatus.ARRIVED_DROPOFF,
+          ],
+        },
       },
     });
 
@@ -42,7 +52,10 @@ export class UsersService {
     });
   }
 
-  async addAddress(userId: string, data: { label: string; address: string; lat?: number; lng?: number }) {
+  async addAddress(
+    userId: string,
+    data: { label: string; address: string; lat?: number; lng?: number },
+  ) {
     return this.prisma.savedAddress.create({
       data: {
         userId,

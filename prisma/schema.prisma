@@ -79,7 +79,9 @@ model CourierProfile {
   vehicleType        VehicleType
   vehiclePhotoUrl    String?
   plateNumber        String?
-  idCardPhotoUrl     String?
+  idCardFrontPhotoUrl String?
+  idCardBackPhotoUrl  String?
+  payoutMpesaNumber  String?
   isOnline           Boolean            @default(false)
   latitude           Float?
   longitude          Float?

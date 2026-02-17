@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { OrderStatus, VehicleType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { TrackingGateway } from '../tracking/tracking.gateway';
@@ -52,7 +57,9 @@ export class OrdersService {
     }
 
     if (courier.verificationStatus === 'REJECTED') {
-      throw new ForbiddenException('Your courier profile has been rejected. Please contact support.');
+      throw new ForbiddenException(
+        'Your courier profile has been rejected. Please contact support.',
+      );
     }
 
     return this.prisma.parcelRequest.findMany({
@@ -67,35 +74,35 @@ export class OrdersService {
   async getMyOrders(userId: string) {
     return this.prisma.parcelRequest.findMany({
       where: {
-        OR: [
-          { customerId: userId },
-          { courierId: userId }
-        ]
+        OR: [{ customerId: userId }, { courierId: userId }],
       },
       include: {
         customer: { select: { name: true, phoneNumber: true } },
-        courier: { 
-          select: { 
-            name: true, 
-            phoneNumber: true, 
+        courier: {
+          select: {
+            name: true,
+            phoneNumber: true,
             courierProfile: {
               select: {
                 vehicleType: true,
                 latitude: true,
-                longitude: true
-              }
-            }
-          } 
-        }
+                longitude: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
     });
   }
 
   async acceptOrder(courierId: string, orderId: string) {
-    const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.parcelRequest.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new NotFoundException('Order not found');
-    if (order.status !== OrderStatus.PAID) throw new BadRequestException('Order is not available for acceptance');
+    if (order.status !== OrderStatus.PAID)
+      throw new BadRequestException('Order is not available for acceptance');
 
     const updatedOrder = await this.prisma.parcelRequest.update({
       where: { id: orderId },
@@ -109,25 +116,38 @@ export class OrdersService {
     return updatedOrder;
   }
 
-  async updateStatus(orderId: string, userId: string, status: OrderStatus, photos?: any) {
-    const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+  async updateStatus(
+    orderId: string,
+    userId: string,
+    status: OrderStatus,
+    photos?: any,
+  ) {
+    const order = await this.prisma.parcelRequest.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new NotFoundException('Order not found');
 
     if (order.customerId !== userId && order.courierId !== userId) {
-      throw new ForbiddenException('You do not have permission to update this order');
+      throw new ForbiddenException(
+        'You do not have permission to update this order',
+      );
     }
 
     const updatedOrder = await this.prisma.parcelRequest.update({
       where: { id: orderId },
       data: {
         status,
-        ...(photos?.pickupPhotoUrl && { pickupPhotoUrl: photos.pickupPhotoUrl }),
-        ...(photos?.deliveryPhotoUrl && { deliveryPhotoUrl: photos.deliveryPhotoUrl }),
+        ...(photos?.pickupPhotoUrl && {
+          pickupPhotoUrl: photos.pickupPhotoUrl,
+        }),
+        ...(photos?.deliveryPhotoUrl && {
+          deliveryPhotoUrl: photos.deliveryPhotoUrl,
+        }),
       },
     });
 
     this.trackingGateway.broadcastStatusUpdate(orderId, status);
-    
+
     // Logic for payment release on DELIVERED could go here or in PaymentsService
     return updatedOrder;
   }
@@ -136,22 +156,29 @@ export class OrdersService {
     const order = await this.prisma.parcelRequest.findUnique({
       where: { id },
       include: {
-        customer: { select: { id: true, name: true, phoneNumber: true, overallRating: true } },
-        courier: { 
-          select: { 
-            id: true, 
-            name: true, 
-            phoneNumber: true, 
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            phoneNumber: true,
+            overallRating: true,
+          },
+        },
+        courier: {
+          select: {
+            id: true,
+            name: true,
+            phoneNumber: true,
             overallRating: true,
             courierProfile: {
               select: {
                 vehicleType: true,
                 plateNumber: true,
                 latitude: true,
-                longitude: true
-              }
-            }
-          } 
+                longitude: true,
+              },
+            },
+          },
         },
       },
     });
@@ -159,22 +186,30 @@ export class OrdersService {
 
     // Phone number visibility logic: only show if ACCEPTED or higher
     const result = { ...order };
-    if (order.status === OrderStatus.CREATED || order.status === OrderStatus.PAID) {
+    if (
+      order.status === OrderStatus.CREATED ||
+      order.status === OrderStatus.PAID
+    ) {
       if (result.customer) (result.customer as any).phoneNumber = 'Hidden';
       if (result.courier) (result.courier as any).phoneNumber = 'Hidden';
     }
-    
+
     return result;
   }
 
   async update(orderId: string, userId: string, data: any) {
-    const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.parcelRequest.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new NotFoundException('Order not found');
-    if (order.customerId !== userId) throw new ForbiddenException('Not your order');
-    
+    if (order.customerId !== userId)
+      throw new ForbiddenException('Not your order');
+
     // Only allow editing if not paid or accepted yet
     if (order.status !== OrderStatus.CREATED) {
-      throw new BadRequestException('Cannot edit an order once it has been paid. Only CREATED orders can be edited.');
+      throw new BadRequestException(
+        'Cannot edit an order once it has been paid. Only CREATED orders can be edited.',
+      );
     }
 
     // Recalculate price if vehicle type changes
@@ -202,13 +237,18 @@ export class OrdersService {
   }
 
   async remove(orderId: string, userId: string) {
-    const order = await this.prisma.parcelRequest.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.parcelRequest.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new NotFoundException('Order not found');
-    if (order.customerId !== userId) throw new ForbiddenException('Not your order');
+    if (order.customerId !== userId)
+      throw new ForbiddenException('Not your order');
 
     // Deletion restricted to CREATED (unpaid) orders as per user request
     if (order.status !== OrderStatus.CREATED) {
-      throw new BadRequestException('Only unpaid orders can be deleted. Please contact support for refunds on paid orders.');
+      throw new BadRequestException(
+        'Only unpaid orders can be deleted. Please contact support for refunds on paid orders.',
+      );
     }
 
     return this.prisma.parcelRequest.delete({

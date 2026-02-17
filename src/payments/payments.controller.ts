@@ -8,8 +8,15 @@ export class PaymentsController {
 
   @UseGuards(JwtAuthGuard)
   @Post('stk-push')
-  async initiateStk(@Request() req: any, @Body() body: { orderId: string; phoneNumber: string; amount: number }) {
-    return this.paymentsService.initiateStkPush(body.orderId, body.phoneNumber, body.amount);
+  async initiateStk(
+    @Request() req: any,
+    @Body() body: { orderId: string; phoneNumber: string; amount: number },
+  ) {
+    return this.paymentsService.initiateStkPush(
+      body.orderId,
+      body.phoneNumber,
+      body.amount,
+    );
   }
 
   @Post('callback')

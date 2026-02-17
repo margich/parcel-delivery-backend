@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 
@@ -18,7 +27,11 @@ export class UsersController {
   }
 
   @Post('addresses')
-  async addAddress(@Request() req: any, @Body() data: { label: string; address: string; lat?: number; lng?: number }) {
+  async addAddress(
+    @Request() req: any,
+    @Body()
+    data: { label: string; address: string; lat?: number; lng?: number },
+  ) {
     return this.usersService.addAddress(req.user.id, data);
   }
 

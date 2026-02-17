@@ -29,6 +29,7 @@ export class AuthService {
         name,
         password: hashedPassword,
         role,
+        activeRole: role,
         defaultRole: role,
       },
     });
@@ -40,7 +41,9 @@ export class AuthService {
           vehicleType: courierData.vehicleType,
           vehiclePhotoUrl: courierData.vehiclePhotoUrl,
           plateNumber: courierData.plateNumber,
-          idCardPhotoUrl: courierData.idCardPhotoUrl,
+          idCardFrontPhotoUrl: courierData.idCardFrontPhotoUrl,
+          idCardBackPhotoUrl: courierData.idCardBackPhotoUrl,
+          payoutMpesaNumber: courierData.payoutMpesaNumber,
         },
       });
     }
@@ -62,7 +65,7 @@ export class AuthService {
     const payload = {
       sub: user.id,
       phoneNumber: user.phoneNumber,
-      role: user.role,
+      role: user.activeRole || user.role,
     };
     return {
       access_token: this.jwtService.sign(payload),
@@ -71,7 +74,7 @@ export class AuthService {
         name: user.name,
         phoneNumber: user.phoneNumber,
         mpesaNumber: user.mpesaNumber,
-        role: user.role,
+        role: user.activeRole || user.role,
         defaultRole: user.defaultRole,
       },
     };
@@ -82,9 +85,20 @@ export class AuthService {
       vehicleType,
       vehiclePhotoUrl,
       plateNumber,
-      idCardPhotoUrl,
+      idCardFrontPhotoUrl,
+      idCardBackPhotoUrl,
+      payoutMpesaNumber,
       mpesaNumber,
     } = data;
+
+    const wantsToBecomeCourier = !!(
+      vehicleType ||
+      vehiclePhotoUrl ||
+      plateNumber ||
+      idCardFrontPhotoUrl ||
+      idCardBackPhotoUrl ||
+      payoutMpesaNumber
+    );
 
     // Update User fields
     const updatedUser = await this.prisma.user.update({
@@ -92,28 +106,62 @@ export class AuthService {
       data: {
         ...(name && { name }),
         ...(mpesaNumber && { mpesaNumber }),
+        ...(wantsToBecomeCourier && {
+          role: 'COURIER',
+          activeRole: 'COURIER',
+          defaultRole: 'COURIER',
+        }),
       },
       include: { courierProfile: true },
     });
 
+    // Create Courier Profile if user is becoming a courier and doesn't have one yet
+    if (
+      updatedUser.role === 'COURIER' &&
+      wantsToBecomeCourier &&
+      !updatedUser.courierProfile
+    ) {
+      await this.prisma.courierProfile.create({
+        data: {
+          userId,
+          vehicleType: vehicleType || 'BIKE',
+          vehiclePhotoUrl,
+          plateNumber,
+          idCardFrontPhotoUrl,
+          idCardBackPhotoUrl,
+          payoutMpesaNumber,
+        },
+      });
+    }
+
     // Update Courier Profile fields if they exist and user is a courier
     if (
       updatedUser.role === 'COURIER' &&
-      (vehicleType || plateNumber || mpesaNumber)
+      (vehicleType ||
+        plateNumber ||
+        vehiclePhotoUrl ||
+        idCardFrontPhotoUrl ||
+        idCardBackPhotoUrl ||
+        payoutMpesaNumber)
     ) {
       await this.prisma.courierProfile.update({
         where: { userId },
         data: {
           ...(vehicleType && { vehicleType }),
+          ...(vehiclePhotoUrl && { vehiclePhotoUrl }),
           ...(plateNumber && { plateNumber }),
-          // Map mpesaNumber to a field if it existed, for now using phoneNumber or specific field?
-          // Schema doesn't have mpesaNumber in CourierProfile, it likely uses User.phoneNumber for payment
-          // But if we want a separate payout number, we should add it.
-          // For MVP, we'll assume payout goes to registered phone number, or we update User.phoneNumber if allowed.
+          ...(idCardFrontPhotoUrl && { idCardFrontPhotoUrl }),
+          ...(idCardBackPhotoUrl && { idCardBackPhotoUrl }),
+          ...(payoutMpesaNumber && { payoutMpesaNumber }),
         },
       });
     }
 
-    return this.login(updatedUser); // Return new token/user obj
+    const userForToken = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { courierProfile: true },
+    });
+
+    return this.login(userForToken); // Return new token/user obj
   }
 }
