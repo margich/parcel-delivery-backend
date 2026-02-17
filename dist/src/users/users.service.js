@@ -19,6 +19,45 @@ let UsersService = class UsersService {
         this.prisma = prisma;
     }
     async getStats(userId) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: { courierProfile: true },
+        });
+        if (user?.role === 'COURIER' || user?.activeRole === 'COURIER') {
+            const totalJobs = await this.prisma.parcelRequest.count({
+                where: { courierId: userId },
+            });
+            const totalEarnedAggregate = await this.prisma.parcelRequest.aggregate({
+                where: {
+                    courierId: userId,
+                    status: { not: client_1.OrderStatus.CANCELLED },
+                },
+                _sum: {
+                    price: true,
+                },
+            });
+            const activeJobs = await this.prisma.parcelRequest.count({
+                where: {
+                    courierId: userId,
+                    status: {
+                        in: [
+                            client_1.OrderStatus.ACCEPTED,
+                            client_1.OrderStatus.ARRIVED_PICKUP,
+                            client_1.OrderStatus.PICKED_UP,
+                            client_1.OrderStatus.IN_TRANSIT,
+                            client_1.OrderStatus.ARRIVED_DROPOFF,
+                        ],
+                    },
+                },
+            });
+            const averageRating = 4.5;
+            return {
+                totalJobs,
+                totalEarned: totalEarnedAggregate._sum.price || 0,
+                averageRating,
+                activeJobs,
+            };
+        }
         const totalOrders = await this.prisma.parcelRequest.count({
             where: { customerId: userId },
         });
