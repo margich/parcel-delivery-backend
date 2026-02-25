@@ -5,13 +5,23 @@ export declare class WalletController {
     getBalance(req: any): Promise<{
         balance: number;
         currency: string;
+        transactions: {
+            id: string;
+            type: import("@prisma/client").$Enums.TransactionType;
+            amount: number;
+            balanceAfter: number;
+            date: Date;
+            reference: string | undefined;
+            status: string;
+        }[];
     }>;
     getTransactions(req: any): Promise<{
-        id: any;
-        type: string;
-        amount: any;
-        date: any;
-        reference: string;
+        id: string;
+        type: import("@prisma/client").$Enums.TransactionType;
+        amount: number;
+        balanceAfter: number;
+        date: Date;
+        reference: string | undefined;
         status: string;
     }[]>;
     withdraw(req: any, data: {

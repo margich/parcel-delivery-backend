@@ -13,12 +13,15 @@ export declare class JwtStrategy extends JwtStrategy_base {
         password: string;
         role: import("@prisma/client").$Enums.Role;
         activeRole: import("@prisma/client").$Enums.Role;
-        defaultRole: import("@prisma/client").$Enums.Role;
         mpesaNumber: string | null;
-        overallRating: number;
+        ratingCount: number;
+        ratingSum: number;
+        overallRating: import("@prisma/client-runtime-utils").Decimal;
         lastLogin: Date | null;
         createdAt: Date;
         updatedAt: Date;
+        isDeleted: boolean;
+        deletedAt: Date | null;
     }>;
 }
 export {};

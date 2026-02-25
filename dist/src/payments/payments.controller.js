@@ -22,7 +22,7 @@ let PaymentsController = class PaymentsController {
         this.paymentsService = paymentsService;
     }
     async initiateStk(req, body) {
-        return this.paymentsService.initiateStkPush(body.orderId, body.phoneNumber, body.amount);
+        return this.paymentsService.initiateStkPush(req.user.id, body.orderData, body.phoneNumber, body.amount);
     }
     async mpesaCallback(body) {
         return this.paymentsService.handleMpesaCallback(body);

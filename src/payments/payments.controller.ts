@@ -10,10 +10,11 @@ export class PaymentsController {
   @Post('stk-push')
   async initiateStk(
     @Request() req: any,
-    @Body() body: { orderId: string; phoneNumber: string; amount: number },
+    @Body() body: { orderData: any; phoneNumber: string; amount: number },
   ) {
     return this.paymentsService.initiateStkPush(
-      body.orderId,
+      req.user.id,
+      body.orderData,
       body.phoneNumber,
       body.amount,
     );

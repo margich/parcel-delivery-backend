@@ -8,13 +8,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TrackingModule = void 0;
 const common_1 = require("@nestjs/common");
+const prisma_module_1 = require("../prisma/prisma.module");
+const location_cron_service_1 = require("./location-cron.service");
 const tracking_gateway_1 = require("./tracking.gateway");
 let TrackingModule = class TrackingModule {
 };
 exports.TrackingModule = TrackingModule;
 exports.TrackingModule = TrackingModule = __decorate([
     (0, common_1.Module)({
-        providers: [tracking_gateway_1.TrackingGateway],
+        imports: [prisma_module_1.PrismaModule],
+        providers: [tracking_gateway_1.TrackingGateway, location_cron_service_1.LocationCronService],
         exports: [tracking_gateway_1.TrackingGateway],
     })
 ], TrackingModule);

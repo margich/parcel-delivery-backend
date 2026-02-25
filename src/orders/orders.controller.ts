@@ -16,7 +16,7 @@ import { OrdersService } from './orders.service';
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
-  constructor(private ordersService: OrdersService) {}
+  constructor(private readonly ordersService: OrdersService) {}
 
   @Get('pricing')
   getPricing() {
@@ -24,27 +24,27 @@ export class OrdersController {
   }
 
   @Get()
-  async getMyOrders(@Request() req: any) {
+  getMyOrders(@Request() req: any) {
     return this.ordersService.getMyOrders(req.user.id);
   }
 
   @Post()
-  async create(@Request() req: any, @Body() orderDto: any) {
+  create(@Request() req: any, @Body() orderDto: any) {
     return this.ordersService.create(req.user.id, orderDto);
   }
 
   @Get('available')
-  async getAvailable(@Request() req: any) {
+  getAvailableOrders(@Request() req: any) {
     return this.ordersService.getAvailableOrders(req.user.id);
   }
 
   @Patch(':id/accept')
-  async accept(@Request() req: any, @Param('id') id: string) {
+  acceptOrder(@Request() req: any, @Param('id') id: string) {
     return this.ordersService.acceptOrder(req.user.id, id);
   }
 
   @Patch(':id/status')
-  async updateStatus(
+  updateStatus(
     @Request() req: any,
     @Param('id') id: string,
     @Body('status') status: OrderStatus,
@@ -54,21 +54,17 @@ export class OrdersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string) {
     return this.ordersService.findOne(id);
   }
 
   @Patch(':id')
-  async update(
-    @Request() req: any,
-    @Param('id') id: string,
-    @Body() updateDto: any,
-  ) {
+  update(@Request() req: any, @Param('id') id: string, @Body() updateDto: any) {
     return this.ordersService.update(id, req.user.id, updateDto);
   }
 
   @Delete(':id')
-  async remove(@Request() req: any, @Param('id') id: string) {
+  remove(@Request() req: any, @Param('id') id: string) {
     return this.ordersService.remove(id, req.user.id);
   }
 }

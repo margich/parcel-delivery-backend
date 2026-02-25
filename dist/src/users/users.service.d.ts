@@ -4,29 +4,33 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     getStats(userId: string): Promise<{
         totalJobs: number;
-        totalEarned: number;
+        totalEarned: number | import("@prisma/client-runtime-utils").Decimal;
         averageRating: number;
         activeJobs: number;
+        ratingCount: number;
+        ratingSum: number;
         totalOrders?: undefined;
         totalSpent?: undefined;
         activeOrders?: undefined;
     } | {
         totalOrders: number;
-        totalSpent: number;
+        totalSpent: number | import("@prisma/client-runtime-utils").Decimal;
         activeOrders: number;
         totalJobs?: undefined;
         totalEarned?: undefined;
         averageRating?: undefined;
         activeJobs?: undefined;
+        ratingCount?: undefined;
+        ratingSum?: undefined;
     }>;
     getAddresses(userId: string): Promise<{
         id: string;
+        createdAt: Date;
         userId: string;
         label: string;
         address: string;
         lat: number | null;
         lng: number | null;
-        createdAt: Date;
     }[]>;
     addAddress(userId: string, data: {
         label: string;
@@ -35,12 +39,12 @@ export declare class UsersService {
         lng?: number;
     }): Promise<{
         id: string;
+        createdAt: Date;
         userId: string;
         label: string;
         address: string;
         lat: number | null;
         lng: number | null;
-        createdAt: Date;
     }>;
     deleteAddress(userId: string, addressId: string): Promise<{
         success: boolean;

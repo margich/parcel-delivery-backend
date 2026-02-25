@@ -23,7 +23,6 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     await this.pool.end();
   }
 
-  // Expose all Prisma client methods
   get user() {
     return this.prisma.user;
   }
@@ -32,8 +31,16 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
     return this.prisma.courierProfile;
   }
 
+  get courierLocationHistory() {
+    return this.prisma.courierLocationHistory;
+  }
+
   get parcelRequest() {
     return this.prisma.parcelRequest;
+  }
+
+  get orderStatusHistory() {
+    return this.prisma.orderStatusHistory;
   }
 
   get transaction() {
@@ -46,5 +53,21 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
 
   get savedAddress() {
     return this.prisma.savedAddress;
+  }
+
+  get wallet() {
+    return this.prisma.wallet;
+  }
+
+  get walletLedger() {
+    return this.prisma.walletLedger;
+  }
+
+  get notification() {
+    return this.prisma.notification;
+  }
+
+  get $transaction() {
+    return this.prisma.$transaction.bind(this.prisma);
   }
 }

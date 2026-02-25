@@ -70,20 +70,23 @@ let AuthService = class AuthService {
                 password: hashedPassword,
                 role,
                 activeRole: role,
-                defaultRole: role,
             },
         });
         if (role === 'COURIER') {
-            await this.prisma.courierProfile.create({
+            const courierProfile = await this.prisma.courierProfile.create({
                 data: {
                     userId: user.id,
                     vehicleType: courierData.vehicleType,
                     vehiclePhotoUrl: courierData.vehiclePhotoUrl,
                     plateNumber: courierData.plateNumber,
+                    idCardNumber: courierData.idCardNumber,
                     idCardFrontPhotoUrl: courierData.idCardFrontPhotoUrl,
                     idCardBackPhotoUrl: courierData.idCardBackPhotoUrl,
                     payoutMpesaNumber: courierData.payoutMpesaNumber,
                 },
+            });
+            await this.prisma.wallet.create({
+                data: { courierId: courierProfile.id },
             });
         }
         return this.login(user);
@@ -110,7 +113,7 @@ let AuthService = class AuthService {
                 phoneNumber: user.phoneNumber,
                 mpesaNumber: user.mpesaNumber,
                 role: user.activeRole || user.role,
-                defaultRole: user.defaultRole,
+                courierProfile: user.courierProfile,
             },
         };
     }
@@ -121,7 +124,7 @@ let AuthService = class AuthService {
         });
     }
     async updateProfile(userId, data) {
-        const { name, vehicleType, vehiclePhotoUrl, plateNumber, idCardFrontPhotoUrl, idCardBackPhotoUrl, payoutMpesaNumber, mpesaNumber, } = data;
+        const { name, vehicleType, vehiclePhotoUrl, plateNumber, idCardNumber, idCardFrontPhotoUrl, idCardBackPhotoUrl, payoutMpesaNumber, mpesaNumber, isOnline, } = data;
         const wantsToBecomeCourier = !!(vehicleType ||
             vehiclePhotoUrl ||
             plateNumber ||
@@ -136,7 +139,6 @@ let AuthService = class AuthService {
                 ...(wantsToBecomeCourier && {
                     role: 'COURIER',
                     activeRole: 'COURIER',
-                    defaultRole: 'COURIER',
                 }),
             },
             include: { courierProfile: true },
@@ -144,34 +146,42 @@ let AuthService = class AuthService {
         if (updatedUser.role === 'COURIER' &&
             wantsToBecomeCourier &&
             !updatedUser.courierProfile) {
-            await this.prisma.courierProfile.create({
+            const courierProfile = await this.prisma.courierProfile.create({
                 data: {
                     userId,
                     vehicleType: vehicleType || 'BIKE',
                     vehiclePhotoUrl,
                     plateNumber,
+                    idCardNumber,
                     idCardFrontPhotoUrl,
                     idCardBackPhotoUrl,
                     payoutMpesaNumber,
                 },
             });
+            await this.prisma.wallet.create({
+                data: { courierId: courierProfile.id },
+            });
         }
-        if (updatedUser.role === 'COURIER' &&
+        else if (updatedUser.role === 'COURIER' &&
             (vehicleType ||
                 plateNumber ||
                 vehiclePhotoUrl ||
+                idCardNumber ||
                 idCardFrontPhotoUrl ||
                 idCardBackPhotoUrl ||
-                payoutMpesaNumber)) {
+                payoutMpesaNumber ||
+                typeof isOnline === 'boolean')) {
             await this.prisma.courierProfile.update({
                 where: { userId },
                 data: {
                     ...(vehicleType && { vehicleType }),
                     ...(vehiclePhotoUrl && { vehiclePhotoUrl }),
                     ...(plateNumber && { plateNumber }),
+                    ...(idCardNumber && { idCardNumber }),
                     ...(idCardFrontPhotoUrl && { idCardFrontPhotoUrl }),
                     ...(idCardBackPhotoUrl && { idCardBackPhotoUrl }),
                     ...(payoutMpesaNumber && { payoutMpesaNumber }),
+                    ...(typeof isOnline === 'boolean' && { isOnline }),
                 },
             });
         }

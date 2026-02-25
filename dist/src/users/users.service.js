@@ -33,7 +33,7 @@ let UsersService = class UsersService {
                     status: { not: client_1.OrderStatus.CANCELLED },
                 },
                 _sum: {
-                    price: true,
+                    courierEarning: true,
                 },
             });
             const activeJobs = await this.prisma.parcelRequest.count({
@@ -50,12 +50,16 @@ let UsersService = class UsersService {
                     },
                 },
             });
-            const averageRating = 4.5;
+            const averageRating = user.courierProfile?.overallRating
+                ? Number(user.courierProfile.overallRating)
+                : 5.0;
             return {
                 totalJobs,
-                totalEarned: totalEarnedAggregate._sum.price || 0,
+                totalEarned: totalEarnedAggregate._sum.courierEarning || 0,
                 averageRating,
                 activeJobs,
+                ratingCount: user.courierProfile?.ratingCount || 0,
+                ratingSum: user.courierProfile?.ratingSum || 0,
             };
         }
         const totalOrders = await this.prisma.parcelRequest.count({
@@ -67,7 +71,7 @@ let UsersService = class UsersService {
                 status: { not: client_1.OrderStatus.CANCELLED },
             },
             _sum: {
-                price: true,
+                totalPrice: true,
             },
         });
         const activeOrders = await this.prisma.parcelRequest.count({
@@ -88,7 +92,7 @@ let UsersService = class UsersService {
         });
         return {
             totalOrders,
-            totalSpent: totalSpentAggregate._sum.price || 0,
+            totalSpent: totalSpentAggregate._sum.totalPrice || 0,
             activeOrders,
         };
     }

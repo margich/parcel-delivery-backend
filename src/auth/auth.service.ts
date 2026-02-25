@@ -30,32 +30,36 @@ export class AuthService {
         password: hashedPassword,
         role,
         activeRole: role,
-        defaultRole: role,
       },
     });
 
     if (role === 'COURIER') {
-      await this.prisma.courierProfile.create({
+      const courierProfile = await this.prisma.courierProfile.create({
         data: {
           userId: user.id,
           vehicleType: courierData.vehicleType,
           vehiclePhotoUrl: courierData.vehiclePhotoUrl,
           plateNumber: courierData.plateNumber,
+          idCardNumber: courierData.idCardNumber,
           idCardFrontPhotoUrl: courierData.idCardFrontPhotoUrl,
           idCardBackPhotoUrl: courierData.idCardBackPhotoUrl,
           payoutMpesaNumber: courierData.payoutMpesaNumber,
         },
       });
+
+      // Create wallet for the courier
+      await this.prisma.wallet.create({
+        data: { courierId: courierProfile.id },
+      });
     }
 
-    return this.login(user); // Auto-login after registration
+    return this.login(user);
   }
 
   async validateUser(phoneNumber: string, pass: string): Promise<any> {
     const user = await this.prisma.user.findUnique({ where: { phoneNumber } });
-    // Note: I need to add 'password' to my Prisma schema. I'll do that now.
-    if (user && (await bcrypt.compare(pass, (user as any).password))) {
-      const { password, ...result } = user as any;
+    if (user && (await bcrypt.compare(pass, user.password))) {
+      const { password, ...result } = user;
       return result;
     }
     return null;
@@ -75,7 +79,7 @@ export class AuthService {
         phoneNumber: user.phoneNumber,
         mpesaNumber: user.mpesaNumber,
         role: user.activeRole || user.role,
-        defaultRole: user.defaultRole,
+        courierProfile: user.courierProfile,
       },
     };
   }
@@ -86,16 +90,19 @@ export class AuthService {
       include: { courierProfile: true },
     });
   }
+
   async updateProfile(userId: string, data: any) {
     const {
       name,
       vehicleType,
       vehiclePhotoUrl,
       plateNumber,
+      idCardNumber,
       idCardFrontPhotoUrl,
       idCardBackPhotoUrl,
       payoutMpesaNumber,
       mpesaNumber,
+      isOnline,
     } = data;
 
     const wantsToBecomeCourier = !!(
@@ -116,7 +123,6 @@ export class AuthService {
         ...(wantsToBecomeCourier && {
           role: 'COURIER',
           activeRole: 'COURIER',
-          defaultRole: 'COURIER',
         }),
       },
       include: { courierProfile: true },
@@ -128,38 +134,46 @@ export class AuthService {
       wantsToBecomeCourier &&
       !updatedUser.courierProfile
     ) {
-      await this.prisma.courierProfile.create({
+      const courierProfile = await this.prisma.courierProfile.create({
         data: {
           userId,
           vehicleType: vehicleType || 'BIKE',
           vehiclePhotoUrl,
           plateNumber,
+          idCardNumber,
           idCardFrontPhotoUrl,
           idCardBackPhotoUrl,
           payoutMpesaNumber,
         },
       });
-    }
 
-    // Update Courier Profile fields if they exist and user is a courier
-    if (
+      // Create wallet for new courier profile
+      await this.prisma.wallet.create({
+        data: { courierId: courierProfile.id },
+      });
+    } else if (
       updatedUser.role === 'COURIER' &&
       (vehicleType ||
         plateNumber ||
         vehiclePhotoUrl ||
+        idCardNumber ||
         idCardFrontPhotoUrl ||
         idCardBackPhotoUrl ||
-        payoutMpesaNumber)
+        payoutMpesaNumber ||
+        typeof isOnline === 'boolean')
     ) {
+      // Update existing Courier Profile fields
       await this.prisma.courierProfile.update({
         where: { userId },
         data: {
           ...(vehicleType && { vehicleType }),
           ...(vehiclePhotoUrl && { vehiclePhotoUrl }),
           ...(plateNumber && { plateNumber }),
+          ...(idCardNumber && { idCardNumber }),
           ...(idCardFrontPhotoUrl && { idCardFrontPhotoUrl }),
           ...(idCardBackPhotoUrl && { idCardBackPhotoUrl }),
           ...(payoutMpesaNumber && { payoutMpesaNumber }),
+          ...(typeof isOnline === 'boolean' && { isOnline }),
         },
       });
     }
@@ -169,6 +183,6 @@ export class AuthService {
       include: { courierProfile: true },
     });
 
-    return this.login(userForToken); // Return new token/user obj
+    return this.login(userForToken);
   }
 }

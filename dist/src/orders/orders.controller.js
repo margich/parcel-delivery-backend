@@ -25,28 +25,28 @@ let OrdersController = class OrdersController {
     getPricing() {
         return this.ordersService.getPricing();
     }
-    async getMyOrders(req) {
+    getMyOrders(req) {
         return this.ordersService.getMyOrders(req.user.id);
     }
-    async create(req, orderDto) {
+    create(req, orderDto) {
         return this.ordersService.create(req.user.id, orderDto);
     }
-    async getAvailable(req) {
+    getAvailableOrders(req) {
         return this.ordersService.getAvailableOrders(req.user.id);
     }
-    async accept(req, id) {
+    acceptOrder(req, id) {
         return this.ordersService.acceptOrder(req.user.id, id);
     }
-    async updateStatus(req, id, status, photos) {
+    updateStatus(req, id, status, photos) {
         return this.ordersService.updateStatus(id, req.user.id, status, photos);
     }
-    async findOne(id) {
+    findOne(id) {
         return this.ordersService.findOne(id);
     }
-    async update(req, id, updateDto) {
+    update(req, id, updateDto) {
         return this.ordersService.update(id, req.user.id, updateDto);
     }
-    async remove(req, id) {
+    remove(req, id) {
         return this.ordersService.remove(id, req.user.id);
     }
 };
@@ -62,7 +62,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "getMyOrders", null);
 __decorate([
     (0, common_1.Post)(),
@@ -70,23 +70,23 @@ __decorate([
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)('available'),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], OrdersController.prototype, "getAvailable", null);
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "getAvailableOrders", null);
 __decorate([
     (0, common_1.Patch)(':id/accept'),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", Promise)
-], OrdersController.prototype, "accept", null);
+    __metadata("design:returntype", void 0)
+], OrdersController.prototype, "acceptOrder", null);
 __decorate([
     (0, common_1.Patch)(':id/status'),
     __param(0, (0, common_1.Request)()),
@@ -95,14 +95,14 @@ __decorate([
     __param(3, (0, common_1.Body)('photos')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String, String, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "updateStatus", null);
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id'),
@@ -111,7 +111,7 @@ __decorate([
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String, Object]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "update", null);
 __decorate([
     (0, common_1.Delete)(':id'),
@@ -119,7 +119,7 @@ __decorate([
     __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, String]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "remove", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),

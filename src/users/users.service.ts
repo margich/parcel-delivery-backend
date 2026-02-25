@@ -7,13 +7,11 @@ export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async getStats(userId: string) {
-    // First check if user is a courier
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { courierProfile: true },
     });
 
-    // If user is a courier, return courier stats
     if (user?.role === 'COURIER' || user?.activeRole === 'COURIER') {
       const totalJobs = await this.prisma.parcelRequest.count({
         where: { courierId: userId },
@@ -25,7 +23,7 @@ export class UsersService {
           status: { not: OrderStatus.CANCELLED },
         },
         _sum: {
-          price: true,
+          courierEarning: true,
         },
       });
 
@@ -44,18 +42,21 @@ export class UsersService {
         },
       });
 
-      // For now, return a placeholder rating - you might want to implement a reviews system
-      const averageRating = 4.5; // Placeholder
+      const averageRating = user.courierProfile?.overallRating
+        ? Number(user.courierProfile.overallRating)
+        : 5.0;
 
       return {
         totalJobs,
-        totalEarned: totalEarnedAggregate._sum.price || 0,
+        totalEarned: totalEarnedAggregate._sum.courierEarning || 0,
         averageRating,
         activeJobs,
+        ratingCount: user.courierProfile?.ratingCount || 0,
+        ratingSum: user.courierProfile?.ratingSum || 0,
       };
     }
 
-    // Otherwise, return customer stats
+    // Customer stats
     const totalOrders = await this.prisma.parcelRequest.count({
       where: { customerId: userId },
     });
@@ -66,7 +67,7 @@ export class UsersService {
         status: { not: OrderStatus.CANCELLED },
       },
       _sum: {
-        price: true,
+        totalPrice: true,
       },
     });
 
@@ -89,7 +90,7 @@ export class UsersService {
 
     return {
       totalOrders,
-      totalSpent: totalSpentAggregate._sum.price || 0,
+      totalSpent: totalSpentAggregate._sum.totalPrice || 0,
       activeOrders,
     };
   }

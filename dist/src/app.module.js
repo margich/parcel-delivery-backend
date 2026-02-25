@@ -9,14 +9,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const schedule_1 = require("@nestjs/schedule");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
 const auth_module_1 = require("./auth/auth.module");
+const notifications_module_1 = require("./notifications/notifications.module");
 const orders_module_1 = require("./orders/orders.module");
 const payments_module_1 = require("./payments/payments.module");
 const prisma_module_1 = require("./prisma/prisma.module");
+const redis_module_1 = require("./redis/redis.module");
 const reviews_module_1 = require("./reviews/reviews.module");
-const tracking_gateway_1 = require("./tracking/tracking.gateway");
 const tracking_module_1 = require("./tracking/tracking.module");
 const users_module_1 = require("./users/users.module");
 const wallet_module_1 = require("./wallet/wallet.module");
@@ -27,7 +29,9 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forRoot({ isGlobal: true }),
+            schedule_1.ScheduleModule.forRoot(),
             prisma_module_1.PrismaModule,
+            redis_module_1.RedisModule,
             auth_module_1.AuthModule,
             orders_module_1.OrdersModule,
             payments_module_1.PaymentsModule,
@@ -35,9 +39,10 @@ exports.AppModule = AppModule = __decorate([
             reviews_module_1.ReviewsModule,
             users_module_1.UsersModule,
             wallet_module_1.WalletModule,
+            notifications_module_1.NotificationsModule,
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService, tracking_gateway_1.TrackingGateway],
+        providers: [app_service_1.AppService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

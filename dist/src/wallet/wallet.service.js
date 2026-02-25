@@ -21,42 +21,80 @@ let WalletService = class WalletService {
     async getBalance(userId) {
         const courier = await this.prisma.courierProfile.findUnique({
             where: { userId },
+            include: {
+                wallet: {
+                    include: {
+                        ledgerEntries: { orderBy: { createdAt: 'desc' }, take: 10 },
+                    },
+                },
+            },
         });
-        if (!courier) {
-            return {
-                balance: 0,
-                currency: 'KES',
-            };
+        if (!courier || !courier.wallet) {
+            return { balance: 0, currency: 'KES', transactions: [] };
         }
         return {
-            balance: courier.walletBalance,
+            balance: Number(courier.wallet.balance),
             currency: 'KES',
+            transactions: courier.wallet.ledgerEntries.map((entry) => ({
+                id: entry.id,
+                type: entry.type,
+                amount: Number(entry.amount),
+                balanceAfter: Number(entry.balanceAfter),
+                date: entry.createdAt,
+                reference: entry.reference || undefined,
+                status: 'COMPLETED',
+            })),
         };
     }
     async getTransactions(userId) {
-        const earnings = await this.prisma.parcelRequest.findMany({
-            where: {
-                courierId: userId,
-                status: { in: [client_1.OrderStatus.DELIVERED, client_1.OrderStatus.COMPLETED] },
+        const courier = await this.prisma.courierProfile.findUnique({
+            where: { userId },
+            include: {
+                wallet: {
+                    include: { ledgerEntries: { orderBy: { createdAt: 'desc' } } },
+                },
             },
-            orderBy: { updatedAt: 'desc' },
-            take: 20,
         });
-        return earnings.map((order) => ({
-            id: order.id,
-            type: 'EARNING',
-            amount: order.price,
-            date: order.updatedAt,
-            reference: `Order #${order.id.substring(0, 8)}`,
+        if (!courier || !courier.wallet)
+            return [];
+        return courier.wallet.ledgerEntries.map((entry) => ({
+            id: entry.id,
+            type: entry.type,
+            amount: Number(entry.amount),
+            balanceAfter: Number(entry.balanceAfter),
+            date: entry.createdAt,
+            reference: entry.reference || undefined,
             status: 'COMPLETED',
         }));
     }
     async requestWithdrawal(userId, amount) {
-        return {
-            success: true,
-            message: 'Withdrawal request received',
-            amount,
-        };
+        const courier = await this.prisma.courierProfile.findUnique({
+            where: { userId },
+            include: { wallet: true },
+        });
+        if (!courier || !courier.wallet) {
+            throw new common_1.BadRequestException('Wallet not found');
+        }
+        const walletId = courier.wallet.id;
+        if (Number(courier.wallet.balance) < amount) {
+            throw new common_1.BadRequestException('Insufficient balance');
+        }
+        await this.prisma.$transaction(async (tx) => {
+            const updatedWallet = await tx.wallet.update({
+                where: { id: walletId },
+                data: { balance: { decrement: amount } },
+            });
+            await tx.walletLedger.create({
+                data: {
+                    walletId: walletId,
+                    type: client_1.TransactionType.PAYOUT,
+                    amount,
+                    balanceAfter: updatedWallet.balance,
+                    reference: 'ManualWithdrawal',
+                },
+            });
+        });
+        return { success: true, message: 'Withdrawal requested', amount };
     }
 };
 exports.WalletService = WalletService;

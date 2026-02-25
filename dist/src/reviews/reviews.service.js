@@ -28,15 +28,43 @@ let ReviewsService = class ReviewsService {
                 comment,
             },
         });
-        const recipientReviews = await this.prisma.review.findMany({
-            where: { toUserId },
-            select: { rating: true },
+        const courierProfile = await this.prisma.courierProfile.findUnique({
+            where: { userId: toUserId },
         });
-        const averageRating = recipientReviews.reduce((acc, curr) => acc + curr.rating, 0) / recipientReviews.length;
-        await this.prisma.user.update({
-            where: { id: toUserId },
-            data: { overallRating: averageRating },
-        });
+        if (courierProfile) {
+            const courierReviews = await this.prisma.review.findMany({
+                where: { toUserId },
+                select: { rating: true },
+            });
+            const ratingSum = courierReviews.reduce((acc, curr) => acc + curr.rating, 0);
+            const ratingCount = courierReviews.length;
+            const averageRating = ratingCount > 0 ? ratingSum / ratingCount : 5.0;
+            await this.prisma.courierProfile.update({
+                where: { userId: toUserId },
+                data: {
+                    overallRating: averageRating,
+                    ratingCount,
+                    ratingSum,
+                },
+            });
+        }
+        else {
+            const userReviews = await this.prisma.review.findMany({
+                where: { toUserId },
+                select: { rating: true },
+            });
+            const ratingSum = userReviews.reduce((acc, curr) => acc + curr.rating, 0);
+            const ratingCount = userReviews.length;
+            const averageRating = ratingCount > 0 ? ratingSum / ratingCount : 5.0;
+            await this.prisma.user.update({
+                where: { id: toUserId },
+                data: {
+                    overallRating: averageRating,
+                    ratingCount,
+                    ratingSum,
+                },
+            });
+        }
         return review;
     }
     async getReviewsForUser(userId) {
